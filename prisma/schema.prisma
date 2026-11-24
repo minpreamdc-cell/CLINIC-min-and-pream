@@ -1,0 +1,718 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./clinic.db"
+}
+
+// -------------------------------------------------------------------------
+// 1. Core Clinic Setup, Users, Roles & Permissions
+// -------------------------------------------------------------------------
+
+model Branch {
+  id          String   @id @default(cuid())
+  code        String   @unique
+  nameTh      String
+  nameEn      String
+  address     String?
+  phone       String?
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users        User[]
+  rooms        Room[]
+  appointments Appointment[]
+  visits       Visit[]
+  invoices     Invoice[]
+  dailyCloses  DailyClose[]
+  auditLogs    AuditLog[]
+}
+
+model User {
+  id           String   @id @default(cuid())
+  username     String   @unique
+  passwordHash String
+  fullName     String
+  role         String   // ADMIN, COUNTER, DENTIST, ASSISTANT, FINANCE
+  email        String?
+  phone        String?
+  branchId     String?
+  branch       Branch?  @relation(fields: [branchId], references: [id])
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  doctorProfile Doctor?
+  auditLogs     AuditLog[]
+}
+
+model Doctor {
+  id             String   @id @default(cuid())
+  userId         String?  @unique
+  user           User?    @relation(fields: [userId], references: [id])
+  licenseNo      String   // ท.บ. เลขที่
+  title          String   @default("ทพ.") // ทพ. หรือ ทพญ.
+  fullName       String
+  nickname       String   // e.g. หมอมิน, หมอพรีม
+  specialty      String   // ทันตกรรมทั่วไป, จัดฟัน, รักษารากฟัน ฯลฯ
+  colorCode      String   @default("#0284c7") // สีประจำแพทย์ในปฏิทิน
+  defaultRoomId  String?
+  defaultRoom    Room?    @relation(fields: [defaultRoomId], references: [id])
+  defaultDfRate  Float    @default(50.0) // ค่า DF เริ่มต้น (%)
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  schedules        DoctorSchedule[]
+  appointments     Appointment[]
+  visits           Visit[]
+  medicalRecords   MedicalRecord[]
+  treatmentItems   TreatmentItem[]
+  labOrders        LabOrder[]
+  doctorFeePayouts DoctorFeePayment[]
+  attendingPatients Patient[] @relation("AttendingDoctor")
+}
+
+model Room {
+  id          String   @id @default(cuid())
+  branchId    String
+  branch      Branch   @relation(fields: [branchId], references: [id])
+  name        String   // ห้องตรวจ 1, ห้องตรวจ 2, ห้อง X-ray
+  chairNumber String?  // เก้าอี้ 1, ยูนิตทำฟัน A
+  colorCode   String   @default("#0d9488")
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  appointments Appointment[]
+  visits       Visit[]
+  doctors      Doctor[]
+  schedules    DoctorSchedule[]
+}
+
+model DoctorSchedule {
+  id        String   @id @default(cuid())
+  doctorId  String
+  doctor    Doctor   @relation(fields: [doctorId], references: [id])
+  roomId    String?
+  room      Room?    @relation(fields: [roomId], references: [id])
+  dayOfWeek Int      // 0 = Sunday, 1 = Monday ... 6 = Saturday
+  startTime String   // "09:00"
+  endTime   String   // "18:00"
+  isActive  Boolean  @default(true)
+}
+
+model BlockedSlot {
+  id        String   @id @default(cuid())
+  branchId  String?
+  doctorId  String?
+  roomId    String?
+  date      String   // "YYYY-MM-DD"
+  startTime String   // "HH:mm"
+  endTime   String   // "HH:mm"
+  reason    String
+  createdBy String?
+  createdAt DateTime @default(now())
+}
+
+model ClinicSetting {
+  id                  String   @id @default("default")
+  clinicNameTh        String   @default("คลินิกทันตกรรมหมอมิน หมอพรีม")
+  clinicNameEn        String   @default("Min & Preem Dental Clinic")
+  logoUrl             String?
+  primaryColor        String   @default("#0284c7") // ฟ้าครามสดใส
+  secondaryColor      String   @default("#0f766e") // เขียวมิ้นต์/หัวเป็ด
+  taxId               String?  @default("0105567012345")
+  address             String   @default("123/45 ถนนสุขุมวิท แขวงคลองเตย เขตคลองเตย กรุงเทพมหานคร 10110")
+  phone               String   @default("02-123-4567, 089-999-8888")
+  email               String?  @default("contact@minpreemdental.com")
+  lineId              String?  @default("@minpreemclinic")
+  receiptHeader       String?  @default("ใบเสร็จรับเงิน / ใบรับรองค่ารักษาพยาบาล")
+  receiptFooter       String?  @default("ขอบพระคุณที่ไว้วางใจให้คลินิกทันตกรรมหมอมิน หมอพรีม ดูแลรอยยิ้มของคุณ")
+  receiptFormat       String   @default("A4") // A4, SLIP
+  defaultDfDeductLab  Boolean  @default(true) // หักค่าแลปก่อนคำนวณ DF
+  defaultDfBaseNet    Boolean  @default(true) // คำนวณจากยอดหลังหักส่วนลด
+  nextDnNumber        Int      @default(1001)
+  nextInvoiceNumber   Int      @default(1001)
+  nextReceiptNumber   Int      @default(1001)
+  nextLabOrderNumber  Int      @default(1001)
+  aiAnalyticsEnabled  Boolean  @default(true) // AI Business Analytics ทางเลือก
+  lineOaEnabled       Boolean  @default(false)
+  lineOaChannelToken  String?
+  lineOaChannelSecret String?
+  updatedAt           DateTime @updatedAt
+}
+
+// -------------------------------------------------------------------------
+// 2. Patient & Medical Record (EMR)
+// -------------------------------------------------------------------------
+
+model Patient {
+  id                     String    @id @default(cuid())
+  dn                     String    @unique // รหัสประจำตัวคนไข้ เช่น DN-260001
+  title                  String    @default("คุณ") // นาย, นาง, นางสาว, ด.ช., ด.ญ., คุณ
+  firstNameTh            String
+  lastNameTh             String
+  firstNameEn            String?
+  lastNameEn             String?
+  gender                 String    @default("UNKNOWN") // MALE, FEMALE, OTHER
+  birthDate              String?   // "YYYY-MM-DD"
+  idCardNumber           String?
+  phone                  String
+  secondaryPhone         String?
+  email                  String?
+  address                String?
+  emergencyContactName   String?
+  emergencyContactPhone  String?
+  emergencyRelation      String?
+  rights                 String    @default("จ่ายเอง") // จ่ายเอง, ประกันสังคม, สปสช., ประกันคู่สัญญา
+  attendingDoctorId      String?
+  attendingDoctor        Doctor?   @relation("AttendingDoctor", fields: [attendingDoctorId], references: [id])
+  drugAllergies          String?   // ประวัติแพ้ยา (เน้นย้ำความปลอดภัย)
+  chronicDiseases        String?   // โรคประจำตัว (เช่น ความดัน, เบาหวาน, โรคหัวใจ)
+  currentMedications     String?   // ยาที่ใช้อยู่ประจำ
+  marketingSource        String?   // แหล่งที่รู้จักคลินิก เช่น เพื่อนแนะนำ, Facebook, TikTok, Walk-in
+  depositBalance         Float     @default(0.0) // ยอดเงินมัดจำคงเหลือ
+  notes                  String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  appointments        Appointment[]
+  visits              Visit[]
+  medicalRecords      MedicalRecord[]
+  toothConditions     ToothCondition[]
+  treatmentPlans      TreatmentPlan[]
+  treatmentItems      TreatmentItem[]
+  invoices            Invoice[]
+  receipts            Receipt[]
+  deposits            Deposit[]
+  patientOrthoPackages PatientOrthoPackage[]
+  labOrders           LabOrder[]
+  documents           PatientDocument[]
+  prescriptionItems   PrescriptionItem[]
+}
+
+model AppointmentType {
+  id                     String   @id @default(cuid())
+  name                   String   // e.g. ขูดหินปูน, อุดฟัน, ตรวจปรึกษาจัดฟัน, รักษาราก, ถอนฟัน
+  defaultDurationMinutes Int      @default(30)
+  defaultFollowUpDays    Int?     // วันนัดติดตามผลล่วงหน้า เช่น 14 วัน, 30 วัน
+  colorCode              String   @default("#38bdf8")
+  isActive               Boolean  @default(true)
+
+  appointments Appointment[]
+}
+
+model Appointment {
+  id              String   @id @default(cuid())
+  branchId        String
+  branch          Branch   @relation(fields: [branchId], references: [id])
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id])
+  doctorId        String
+  doctor          Doctor   @relation(fields: [doctorId], references: [id])
+  roomId          String
+  room            Room     @relation(fields: [roomId], references: [id])
+  date            String   // "YYYY-MM-DD"
+  startTime       String   // "HH:mm"
+  endTime         String   // "HH:mm"
+  durationMinutes Int      @default(30)
+  typeId          String?
+  type            AppointmentType? @relation(fields: [typeId], references: [id])
+  typeName        String?
+  status          String   @default("BOOKED") // BOOKED, CONFIRMED, CANCELLED, NO_SHOW
+  cancelReason    String?
+  reminderSent    Boolean  @default(false)
+  notes           String?
+  bookedBy        String?
+  updatedBy       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  visit           Visit?   // 1-to-1 relation with check-in visit
+}
+
+model Visit {
+  id              String   @id @default(cuid())
+  visitNumber     String   @unique // VN-20261124-001
+  appointmentId   String?  @unique // เช็กอินซ้ำไม่สร้างรายการซ้ำ (Unique)
+  appointment     Appointment? @relation(fields: [appointmentId], references: [id])
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id])
+  doctorId        String
+  doctor          Doctor   @relation(fields: [doctorId], references: [id])
+  roomId          String
+  room            Room     @relation(fields: [roomId], references: [id])
+  branchId        String
+  branch          Branch   @relation(fields: [branchId], references: [id])
+  visitDate       String   // "YYYY-MM-DD"
+  queueNumber     Int      // เลขคิวประจำวัน เช่น 1, 2, 3...
+  status          String   @default("WAITING_EXAM") // WAITING_EXAM (รอตรวจ), IN_EXAM (กำลังตรวจ), WAITING_PAYMENT (รอชำระ), COMPLETED (เสร็จสิ้น), CANCELLED (ยกเลิก)
+  checkInTime     DateTime @default(now())
+  checkInBy       String?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  medicalRecord       MedicalRecord?
+  treatmentItems      TreatmentItem[]
+  prescriptionItems   PrescriptionItem[]
+  invoices            Invoice[]
+  orthoAdjustmentLogs OrthoAdjustmentLog[]
+  labOrders           LabOrder[]
+}
+
+model MedicalRecord {
+  id                   String   @id @default(cuid())
+  visitId              String   @unique
+  visit                Visit    @relation(fields: [visitId], references: [id])
+  patientId            String
+  patient              Patient  @relation(fields: [patientId], references: [id])
+  doctorId             String
+  doctor               Doctor   @relation(fields: [doctorId], references: [id])
+  chiefComplaint       String?  // อาการสำคัญ (CC)
+  physicalExam         String?  // ผลการตรวจช่องปาก (PE)
+  diagnosis            String?  // การวินิจฉัย (Dx)
+  treatmentDescription String?  // รายละเอียดหัตถการที่ทำ
+  advice               String?  // คำแนะนำหลังการรักษา
+  followUpPlan         String?  // แผนการนัดติดตาม
+  isDraft              Boolean  @default(true)
+  isSigned             Boolean  @default(false)
+  signedAt             DateTime?
+  signedByDoctorId     String?
+  previousVersionJson  String?  // เก็บร่างฉบับก่อนหน้าเมื่อมีการแก้ไขหลังลงนาม
+  editReason           String?  // เหตุผลการแก้ไขหลังจากลงนามแล้ว
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model ToothCondition {
+  id                 String   @id @default(cuid())
+  patientId          String
+  patient            Patient  @relation(fields: [patientId], references: [id])
+  toothNumber        String   // FDI notation e.g. "11", "16", "48", "51"
+  conditionType      String   // CARIES, FILLING, CROWN, MISSING, EXTRACTION_NEEDED, ROOT_CANAL, IMPLANT, VENEER, NORMAL
+  surfaces           String?  // M, O, D, B, L, MOD, MODBL
+  notes              String?
+  recordedByDoctorId String?
+  recordedByName     String?
+  recordedAt         DateTime @default(now())
+}
+
+model TreatmentPlan {
+  id             String   @id @default(cuid())
+  patientId      String
+  patient        Patient  @relation(fields: [patientId], references: [id])
+  toothNumber    String?
+  procedureCode  String
+  procedureName  String
+  estimatedPrice Float
+  status         String   @default("PROPOSED") // PROPOSED, PLANNED, DONE, CANCELLED
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model PrescriptionItem {
+  id                 String   @id @default(cuid())
+  visitId            String
+  visit              Visit    @relation(fields: [visitId], references: [id])
+  patientId          String
+  patient            Patient  @relation(fields: [patientId], references: [id])
+  drugName           String   // ชื่อยา เช่น Amoxicillin 500mg, Paracetamol 500mg, Ibuprofen 400mg
+  quantity           Int      @default(1)
+  unit               String   @default("เม็ด")
+  dosageInstructions String   // รับประทานครั้งละ 1 เม็ด หลังอาหาร เช้า-กลางวัน-เย็น
+  notes              String?
+  printedLabelAt     DateTime?
+  createdAt          DateTime @default(now())
+}
+
+// -------------------------------------------------------------------------
+// 3. Billing, Invoices, Receipts & Doctor Fee (DF)
+// -------------------------------------------------------------------------
+
+model TreatmentItem {
+  id                String   @id @default(cuid())
+  visitId           String
+  visit             Visit    @relation(fields: [visitId], references: [id])
+  patientId         String
+  patient           Patient  @relation(fields: [patientId], references: [id])
+  doctorId          String
+  doctor            Doctor   @relation(fields: [doctorId], references: [id])
+  invoiceId         String?
+  invoice           Invoice? @relation(fields: [invoiceId], references: [id])
+  toothNumber       String?  // ระบุซี่ฟัน เช่น "16", "21"
+  procedureCode     String   // e.g. D01, D12, T01
+  procedureName     String   // e.g. ขูดหินปูนทั้งปาก, อุดฟันเรซินคอมโพสิต
+  category          String   @default("GENERAL") // GENERAL, ORTHO, ENDO, SURGERY, PROSTHODONTICS
+  qty               Int      @default(1)
+  unitPrice         Float
+  discountAmount    Float    @default(0.0)
+  netAmount         Float    // (qty * unitPrice) - discountAmount
+  
+  // DF Calculation Snapshot
+  dfType            String   @default("PERCENT") // PERCENT, FIXED
+  dfRate            Float    @default(50.0)
+  dfCalculated      Float    @default(0.0)
+  labCostDeducted   Float    @default(0.0)
+  dfFinal           Float    @default(0.0)
+  
+  stockDeducted     Boolean  @default(false)
+  status            String   @default("PENDING") // PENDING, BILLED, CANCELLED
+  createdAt         DateTime @default(now())
+
+  doctorFeePayments DoctorFeePayment[]
+}
+
+model Invoice {
+  id            String   @id @default(cuid())
+  invoiceNo     String   @unique // INV-2026-0001
+  visitId       String
+  visit         Visit    @relation(fields: [visitId], references: [id])
+  patientId     String
+  patient       Patient  @relation(fields: [patientId], references: [id])
+  branchId      String
+  branch        Branch   @relation(fields: [branchId], references: [id])
+  totalAmount   Float
+  totalDiscount Float    @default(0.0)
+  netAmount     Float    // totalAmount - totalDiscount
+  paidAmount    Float    @default(0.0)
+  balanceDue    Float    // netAmount - paidAmount
+  status        String   @default("UNPAID") // UNPAID, PARTIALLY_PAID, PAID, CANCELLED
+  notes         String?
+  createdBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  treatmentItems TreatmentItem[]
+  payments       Payment[]
+  receipts       Receipt[]
+  insuranceClaim InsuranceClaim?
+}
+
+model Payment {
+  id             String   @id @default(cuid())
+  invoiceId      String
+  invoice        Invoice  @relation(fields: [invoiceId], references: [id])
+  paymentDate    DateTime @default(now()) // วันที่รับเงินจริง (Cash-basis reporting)
+  amount         Float
+  paymentMethod  String   // CASH, TRANSFER, CREDIT_CARD, QR, DEPOSIT_USE, INSURANCE_CLAIM
+  methodDetails  String?  // ธนาคารกสิกรไทย, บัตรเครดิต Visa XXXX
+  isDepositUse   Boolean  @default(false) // เพื่อไม่นับเงินสดเข้าซ้ำ
+  receivedBy     String?
+  notes          String?
+  createdAt      DateTime @default(now())
+
+  receipts       Receipt[]
+}
+
+model Receipt {
+  id                   String    @id @default(cuid())
+  receiptNo            String    @unique // REC-2026-0001
+  invoiceId            String
+  invoice              Invoice   @relation(fields: [invoiceId], references: [id])
+  patientId            String
+  patient              Patient   @relation(fields: [patientId], references: [id])
+  paymentId            String?
+  payment              Payment?  @relation(fields: [paymentId], references: [id])
+  receiptDate          DateTime  @default(now())
+  totalAmount          Float
+  totalDiscount        Float     @default(0.0)
+  netAmount            Float
+  paidAmount           Float
+  paymentMethodSummary String    // e.g. "เงินสด 300 บาท, โอนเงิน 500 บาท"
+  isVoided             Boolean   @default(false)
+  voidReason           String?
+  voidedBy             String?
+  voidedAt             DateTime?
+  printedCount         Int       @default(1)
+  createdBy            String?
+  createdAt            DateTime  @default(now())
+
+  doctorFeePayments    DoctorFeePayment[]
+}
+
+model Deposit {
+  id               String   @id @default(cuid())
+  patientId        String
+  patient          Patient  @relation(fields: [patientId], references: [id])
+  date             DateTime @default(now())
+  type             String   // RECEIVE (รับมัดจำ), USE (ใช้มัดจำชำระบิล), REFUND (คืนเงินมัดจำ)
+  amount           Float
+  balanceAfter     Float
+  relatedInvoiceId String?
+  relatedReceiptId String?
+  paymentMethod    String?  // CASH, TRANSFER, CREDIT_CARD, QR
+  notes            String?
+  processedBy      String?
+  createdAt        DateTime @default(now())
+}
+
+model DoctorFeePayment {
+  id              String   @id @default(cuid())
+  treatmentItemId String
+  treatmentItem   TreatmentItem @relation(fields: [treatmentItemId], references: [id])
+  doctorId        String
+  doctor          Doctor   @relation(fields: [doctorId], references: [id])
+  receiptId       String?
+  receipt         Receipt? @relation(fields: [receiptId], references: [id])
+  baseAmount      Float
+  dfPercent       Float?
+  dfFixed         Float?
+  labDeduction    Float    @default(0.0)
+  netDf           Float
+  isPaidOut       Boolean  @default(false)
+  payoutDate      DateTime?
+  createdAt       DateTime @default(now())
+}
+
+model InsuranceClaim {
+  id               String    @id @default(cuid())
+  invoiceId        String    @unique
+  invoice          Invoice   @relation(fields: [invoiceId], references: [id])
+  patientId        String
+  rightsType       String    // ประกันสังคม, สปสช., ประกันคู่สัญญา
+  claimAmount      Float
+  submittedDate    DateTime  @default(now())
+  status           String    @default("SUBMITTED") // SUBMITTED, APPROVED, PARTIAL, DIFFERENCE, REJECTED
+  receivedAmount   Float     @default(0.0)
+  differenceAmount Float     @default(0.0)
+  reconciledAt     DateTime?
+  reconciledBy     String?
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+}
+
+// -------------------------------------------------------------------------
+// 4. Orthodontics, Lab Orders & Inventory
+// -------------------------------------------------------------------------
+
+model OrthoPackage {
+  id                String   @id @default(cuid())
+  name              String   // เช่น จัดฟันโลหะ Mini Diamond, จัดฟันใส Clear Aligner
+  totalAmount       Float    // 45,000 บาท
+  downPayment       Float    // มัดจำ/ติดเครื่องมือ 5,000 บาท
+  installmentCount  Int      // 24 งวด
+  installmentAmount Float    // งวดละ 1,500 บาท
+  description       String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  patientPackages PatientOrthoPackage[]
+}
+
+model PatientOrthoPackage {
+  id                String   @id @default(cuid())
+  patientId         String
+  patient           Patient  @relation(fields: [patientId], references: [id])
+  packageId         String
+  package           OrthoPackage @relation(fields: [packageId], references: [id])
+  packageName       String   // เก็บ snapshot ชื่อและราคาไม่ให้เปลี่ยนเมื่อแก้แม่แบบ
+  totalAmount       Float
+  downPayment       Float
+  paidAmount        Float    @default(0.0)
+  balanceDue        Float
+  status            String   @default("ACTIVE") // ACTIVE, COMPLETED, SUSPENDED
+  startedDate       DateTime @default(now())
+  notes             String?
+
+  installments      OrthoInstallment[]
+  adjustmentLogs    OrthoAdjustmentLog[]
+}
+
+model OrthoInstallment {
+  id                    String   @id @default(cuid())
+  patientOrthoPackageId String
+  patientOrthoPackage   PatientOrthoPackage @relation(fields: [patientOrthoPackageId], references: [id])
+  installmentNo         Int
+  dueDate               String?
+  plannedAmount         Float
+  paidAmount            Float    @default(0.0)
+  status                String   @default("PENDING") // PENDING, PAID
+  paidDate              DateTime?
+  receiptId             String?
+  notes                 String?
+}
+
+model OrthoAdjustmentLog {
+  id                    String   @id @default(cuid())
+  patientOrthoPackageId String
+  patientOrthoPackage   PatientOrthoPackage @relation(fields: [patientOrthoPackageId], references: [id])
+  visitId               String?
+  visit                 Visit?   @relation(fields: [visitId], references: [id])
+  date                  DateTime @default(now())
+  upperArchWire         String?  // ลวดบน เช่น .014 NiTi, .016x.022 SS
+  lowerArchWire         String?  // ลวดล่าง
+  elasticNotes          String?  // ยางดึง เช่น Class II 3/16 4.5oz
+  procedureNotes        String?  // ปรับเครื่องมือ, เปลี่ยนยาง O-ring
+  doctorId              String?
+  nextVisitTarget       String?
+}
+
+model LabOrder {
+  id              String   @id @default(cuid())
+  orderNo         String   @unique // LAB-2026-0001
+  patientId       String
+  patient         Patient  @relation(fields: [patientId], references: [id])
+  doctorId        String
+  doctor          Doctor   @relation(fields: [doctorId], references: [id])
+  visitId         String?
+  visit           Visit?   @relation(fields: [visitId], references: [id])
+  toothNumber     String?  // e.g. "21"
+  workType        String   // CROWN (ครอบฟัน), BRIDGE (สะพานฟัน), DENTURE (ฟันปลอม), RETAINER (รีเทนเนอร์), ALIGNER
+  labCompanyName  String   // เช่น โมเดิร์นเดนทัลแลป, สไมล์แลป
+  sentDate        DateTime @default(now())
+  dueDate         DateTime // กำหนดรับ
+  status          String   @default("SENT") // SENT, IN_PROGRESS, RECEIVED, REVISION, COMPLETED, FITTED
+  cost            Float    // ค่าแลป
+  invoiceNo       String?  // เลขใบแจ้งหนี้แลป
+  deductionType   String   @default("DOCTOR") // DOCTOR (หักจาก DF แพทย์), CLINIC (คลินิกจ่าย)
+  isPaid          Boolean  @default(false)
+  revisionNotes   String?
+  shadeGuide      String?  // เบอร์สีฟัน เช่น A2, A3
+  instructions    String?  // รายละเอียดงาน
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model InventoryItem {
+  id            String   @id @default(cuid())
+  code          String   @unique // e.g. MED-001, MAT-001
+  name          String   // e.g. Amoxicillin 500mg, Composite A2, ถุงมือไซส์ M
+  category      String   // DRUG, DENTAL_SUPPLY, RETAIL, CONSUMABLE
+  unit          String   // แผง, หลอด, กล่อง, ชิ้น
+  minStockAlert Int      @default(10)
+  currentStock  Int      @default(0)
+  costPrice     Float    @default(0.0)
+  salePrice     Float    @default(0.0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  stocks        InventoryStock[]
+  movements     InventoryMovement[]
+  procedureLinks ProcedureStockLink[]
+}
+
+model InventoryStock {
+  id           String   @id @default(cuid())
+  itemId       String
+  item         InventoryItem @relation(fields: [itemId], references: [id])
+  lotNumber    String
+  expiryDate   String?  // "YYYY-MM-DD"
+  qty          Int
+  costPrice    Float
+  receivedDate DateTime @default(now())
+
+  movements    InventoryMovement[]
+}
+
+model InventoryMovement {
+  id            String   @id @default(cuid())
+  itemId        String
+  item          InventoryItem @relation(fields: [itemId], references: [id])
+  stockId       String?
+  stock         InventoryStock? @relation(fields: [stockId], references: [id])
+  movementType  String   // RECEIVE (รับเข้า), DISPENSE (เบิกจ่าย), RETURN (คืน), ADJUST (ปรับยอด), PROCEDURE_USE (ตัดตามหัตถการ)
+  qty           Int      // ค่าบวกหรือลบ
+  balanceAfter  Int
+  referenceType String?  // VISIT, INVOICE, ADJUSTMENT
+  referenceId   String?
+  reason        String?
+  performedBy   String?
+  createdAt     DateTime @default(now())
+}
+
+model ProcedureStockLink {
+  id              String   @id @default(cuid())
+  procedureCode   String
+  inventoryItemId String
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  requiredQty     Int      @default(1)
+  autoDeductOn    String   @default("PROCEDURE_DONE") // PROCEDURE_DONE, PAYMENT_DONE
+}
+
+// -------------------------------------------------------------------------
+// 5. Daily Close, Documents, Master Catalogs & Audit Logs
+// -------------------------------------------------------------------------
+
+model DailyClose {
+  id              String   @id @default(cuid())
+  branchId        String
+  branch          Branch   @relation(fields: [branchId], references: [id])
+  closeDate       String   // "YYYY-MM-DD"
+  shiftName       String   @default("กะประจำวัน")
+  systemCash      Float    @default(0.0)
+  systemTransfer  Float    @default(0.0)
+  systemCard      Float    @default(0.0)
+  systemQr        Float    @default(0.0)
+  systemTotal     Float    @default(0.0)
+  countedCash     Float    @default(0.0)
+  countedTransfer Float    @default(0.0)
+  countedCard     Float    @default(0.0)
+  countedQr       Float    @default(0.0)
+  countedTotal    Float    @default(0.0)
+  difference      Float    @default(0.0)
+  reason          String?
+  isReopened      Boolean  @default(false)
+  reopenReason    String?
+  reopenedBy      String?
+  closedBy        String
+  closedAt        DateTime @default(now())
+}
+
+model PatientDocument {
+  id         String   @id @default(cuid())
+  patientId  String
+  patient    Patient  @relation(fields: [patientId], references: [id])
+  category   String   // XRAY, INTRAORAL, EXTRAORAL, OPD_CARD, CONSENT_FORM, GENERAL_DOC
+  title      String
+  fileUrl    String   // local file path or data url
+  fileType   String?
+  fileSize   Int?
+  uploadedBy String?
+  createdAt  DateTime @default(now())
+}
+
+model ProcedureCatalog {
+  id             String   @id @default(cuid())
+  code           String   @unique
+  nameTh         String
+  nameEn         String?
+  category       String   // ขูดหินปูน, อุดฟัน, ถอนฟัน/ผ่าฟันคุด, รักษาราก, ฟอกสีฟัน, จัดฟัน, ประดิษฐ์
+  defaultPrice   Float
+  defaultDfType  String   @default("PERCENT") // PERCENT, FIXED
+  defaultDfRate  Float    @default(50.0)
+  defaultDurationMinutes Int @default(30)
+  isActive       Boolean  @default(true)
+}
+
+model DiagnosisCatalog {
+  id       String  @id @default(cuid())
+  code     String  @unique // ICD-10 or Dental code e.g. K02.1, K05.1
+  nameTh   String
+  nameEn   String?
+  category String?
+  isActive Boolean @default(true)
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  branchId   String?
+  branch     Branch?  @relation(fields: [branchId], references: [id])
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id])
+  userName   String
+  action     String   // EMR_UPDATE, RECEIPT_VOID, REFUND, DEPOSIT_USE, ROLE_CHANGE, DAILY_CLOSE_REOPEN
+  entityType String   // MedicalRecord, Receipt, Payment, DailyClose, User
+  entityId   String?
+  details    String?  // JSON or text details
+  ipAddress  String?
+  createdAt  DateTime @default(now())
+}
