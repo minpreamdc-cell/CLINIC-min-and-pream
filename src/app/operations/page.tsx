@@ -278,7 +278,7 @@ export default function ClinicOperationsPage() {
                   ทพ. มินตรา รัตนเวชกุล (หมอมิน)
                 </h3>
                 <p className="text-xs text-slate-600">
-                  ความเชี่ยวชาญ: ทันตกรรมจัดฟันและทันตกรรมทั่วไป • เวลาออกตรวจปกติ: จันทร์-เสาร์ 09:00 - 18:00 น.
+                  ความเชี่ยวชาญ: ทันตกรรมจัดฟันและทันตกรรมทั่วไป • เวลาออกตรวจปกติ: จันทร์-เสาร์ 09:00 - 22:00 น.
                 </p>
               </div>
               <div className="w-12 h-12 rounded-2xl bg-sky-600 text-white font-black flex items-center justify-center text-sm">
@@ -295,7 +295,7 @@ export default function ClinicOperationsPage() {
                   ทพญ. พรีมญา สิริวัชราภรณ์ (หมอพรีม)
                 </h3>
                 <p className="text-xs text-slate-600">
-                  ความเชี่ยวชาญ: รักษารากฟันและทันตกรรมเพื่อความงาม • เวลาออกตรวจปกติ: จันทร์-เสาร์ 09:00 - 18:00 น.
+                  ความเชี่ยวชาญ: รักษารากฟันและทันตกรรมเพื่อความงาม • เวลาออกตรวจปกติ: จันทร์-เสาร์ 09:00 - 22:00 น.
                 </p>
               </div>
               <div className="w-12 h-12 rounded-2xl bg-teal-600 text-white font-black flex items-center justify-center text-sm">

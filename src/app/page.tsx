@@ -161,12 +161,13 @@ export default function TodayQueueCalendarPage() {
     }
   };
 
-  // Generate 30-min time slots from 09:00 to 18:30
+  // Generate 30-min time slots from 09:00 to 22:00
   const timeSlots: string[] = [];
-  for (let hour = 9; hour <= 18; hour++) {
+  for (let hour = 9; hour <= 21; hour++) {
     timeSlots.push(`${String(hour).padStart(2, '0')}:00`);
     timeSlots.push(`${String(hour).padStart(2, '0')}:30`);
   }
+  timeSlots.push('22:00');
 
   const columns = viewMode === 'ROOM' ? rooms : doctors;
 
