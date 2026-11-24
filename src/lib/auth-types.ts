@@ -22,8 +22,10 @@ export const ROLE_NAMES_TH: Record<UserRole, string> = {
 
 export const MENU_PERMISSIONS: Record<string, UserRole[]> = {
   queue: ['ADMIN', 'COUNTER', 'DENTIST', 'ASSISTANT', 'FINANCE'],
+  'tv-queue': ['ADMIN', 'COUNTER', 'DENTIST', 'ASSISTANT', 'FINANCE'],
   appointments: ['ADMIN', 'COUNTER', 'DENTIST', 'ASSISTANT'],
   patients: ['ADMIN', 'COUNTER', 'DENTIST', 'ASSISTANT'],
+  recall: ['ADMIN', 'COUNTER', 'DENTIST', 'ASSISTANT'],
   emr: ['ADMIN', 'DENTIST', 'ASSISTANT'],
   billing: ['ADMIN', 'COUNTER', 'FINANCE'],
   ortho: ['ADMIN', 'COUNTER', 'DENTIST'],

@@ -21,6 +21,8 @@ import {
   PinOff,
   Menu,
   X,
+  Tv,
+  BellRing,
 } from 'lucide-react';
 import { SessionUser, UserRole, ROLE_NAMES_TH, MENU_PERMISSIONS } from '@/lib/auth-types';
 import { formatThaiDate } from '@/lib/utils';
@@ -108,13 +110,15 @@ export default function Navbar() {
 
   const navItems = [
     { key: 'queue', label: 'คิววันนี้', href: '/', icon: Clock },
+    { key: 'tv-queue', label: 'จอ TV เรียกคิว', href: '/tv-queue', icon: Tv },
     { key: 'appointments', label: 'รายการนัดหมาย', href: '/appointments', icon: Calendar },
-    { key: 'patients', label: 'คนไข้', href: '/patients', icon: Users },
+    { key: 'patients', label: 'คนไข้ & X-Ray', href: '/patients', icon: Users },
+    { key: 'recall', label: 'ติดตามคนไข้ & LINE', href: '/recall', icon: BellRing },
     { key: 'billing', label: 'การเงิน & ใบเสร็จ', href: '/billing', icon: CreditCard },
     { key: 'ortho', label: 'จัดฟัน', href: '/ortho', icon: Smile },
     { key: 'lab', label: 'งานแลป', href: '/lab', icon: FlaskConical },
     { key: 'inventory', label: 'คลังเวชภัณฑ์', href: '/inventory', icon: Package },
-    { key: 'reports', label: 'รายงาน & ปิดยอด', href: '/reports', icon: BarChart3 },
+    { key: 'reports', label: 'รายงาน & DF แพทย์', href: '/reports', icon: BarChart3 },
     { key: 'settings', label: 'ตั้งค่า', href: '/settings', icon: Settings },
   ];
 

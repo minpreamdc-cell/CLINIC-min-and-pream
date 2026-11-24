@@ -631,35 +631,111 @@ export default function ReportsPage() {
         </div>
       )}
 
-      {/* TAB: DOCTOR FEES / DF REPORT */}
+      {/* TAB: DOCTOR FEES / DF REPORT & PAYROLL SLIP */}
       {activeTab === 'doctor-fees' && reportData?.doctorSummary && (
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {reportData.doctorSummary.map((ds: any, idx: number) => (
-              <div key={idx} className="p-5 bg-white rounded-2xl border border-sky-200 shadow-sm space-y-3 text-xs">
-                <div className="flex justify-between items-center border-b pb-2">
-                  <h4 className="font-bold text-sm text-sky-950">{ds.doctorName}</h4>
-                  <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 font-bold">
-                    {ds.count} หัตถการ
-                  </span>
-                </div>
-                <div className="space-y-1.5 font-mono">
-                  <div className="flex justify-between text-slate-600">
-                    <span>ยอดค่ารักษาที่ทำ:</span>
-                    <strong>{formatCurrency(ds.totalRevenue)}</strong>
-                  </div>
-                  <div className="flex justify-between text-rose-600">
-                    <span>หักค่าแลป:</span>
-                    <strong>-{formatCurrency(ds.totalLab)}</strong>
-                  </div>
-                  <div className="flex justify-between text-sm font-black text-sky-900 border-t pt-1">
-                    <span>ยอดจ่าย DF สุทธิ:</span>
-                    <strong>{formatCurrency(ds.totalDf)}</strong>
-                  </div>
-                </div>
-              </div>
-            ))}
+        <div className="space-y-6">
+          <div className="flex items-center justify-between no-print">
+            <div>
+              <h3 className="text-sm font-bold text-slate-800">
+                ใบสรุปค่ามือทันตแพทย์ (Doctor Fee / DF Payroll Statement)
+              </h3>
+              <p className="text-xs text-slate-500">
+                คำนวณส่วนแบ่ง DF สุทธิ หักค่าแลปทันตกรรม และคำนวณภาษีหัก ณ ที่จ่าย 3% พร้อมสั่งพิมพ์สลิปเงินได้แพทย์
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="px-4 py-2 bg-sky-600 hover:bg-sky-700 text-white font-bold text-xs rounded-xl shadow-sm"
+            >
+              🖨️ พิมพ์สลิปค่ามือแพทย์ (DF Slip)
+            </button>
           </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {reportData.doctorSummary.map((ds: any, idx: number) => {
+              const withholdingTax3Percent = ds.totalDf * 0.03;
+              const netPayoutAfterTax = ds.totalDf - withholdingTax3Percent;
+              return (
+                <div key={idx} className="p-5 bg-white rounded-2xl border-2 border-sky-200 shadow-sm space-y-3 text-xs">
+                  <div className="flex justify-between items-center border-b border-slate-200 pb-2.5">
+                    <div>
+                      <span className="text-[10px] font-bold text-sky-600 uppercase tracking-wider block">
+                        DOCTOR FEE STATEMENT • คลินิกหมอมิน หมอพรีม
+                      </span>
+                      <h4 className="font-black text-base text-slate-900">{ds.doctorName}</h4>
+                    </div>
+                    <span className="px-3 py-1 rounded-full bg-sky-100 text-sky-800 font-bold">
+                      {ds.count} หัตถการ
+                    </span>
+                  </div>
+                  <div className="space-y-2 font-mono">
+                    <div className="flex justify-between text-slate-600">
+                      <span>1. ยอดค่ารักษาที่ทำทั้งหมด (Gross Revenue):</span>
+                      <strong>{formatCurrency(ds.totalRevenue)}</strong>
+                    </div>
+                    <div className="flex justify-between text-rose-600">
+                      <span>2. หักค่าแลปทันตกรรมส่วนแพทย์ (Lab Deduction):</span>
+                      <strong>-{formatCurrency(ds.totalLab)}</strong>
+                    </div>
+                    <div className="flex justify-between font-bold text-slate-800 border-t border-slate-100 pt-1.5">
+                      <span>3. ยอดค่ามือแพทย์ก่อนภาษี (Gross DF):</span>
+                      <strong>{formatCurrency(ds.totalDf)}</strong>
+                    </div>
+                    <div className="flex justify-between text-amber-700">
+                      <span>4. หักภาษี ณ ที่จ่าย 3% (WHT 3%):</span>
+                      <strong>-{formatCurrency(withholdingTax3Percent)}</strong>
+                    </div>
+                    <div className="flex justify-between text-sm font-black text-emerald-800 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+                      <span>ยอดโอนจ่ายแพทย์สุทธิ (Net Payout):</span>
+                      <strong>{formatCurrency(netPayoutAfterTax)}</strong>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Detailed Procedure Breakdown for Doctor Payroll */}
+          {reportData.items && reportData.items.length > 0 && (
+            <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
+              <div className="px-4 py-3 bg-slate-50 border-b border-slate-200 font-bold text-xs text-slate-800">
+                รายละเอียดหัตถการประกอบการคิดค่า DF แพทย์ ({reportData.items.length} รายการ)
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs divide-y divide-slate-200">
+                  <thead className="bg-slate-50/70 font-bold text-slate-600">
+                    <tr>
+                      <th className="px-4 py-2.5">วันที่</th>
+                      <th className="px-4 py-2.5">ทันตแพทย์</th>
+                      <th className="px-4 py-2.5">คนไข้</th>
+                      <th className="px-4 py-2.5">หัตถการ (ซี่ฟัน)</th>
+                      <th className="px-4 py-2.5 text-right">ค่ารักษาสุทธิ</th>
+                      <th className="px-4 py-2.5 text-center">เรท DF</th>
+                      <th className="px-4 py-2.5 text-right">ค่า DF ที่ได้รับ</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {reportData.items.map((it: any) => (
+                      <tr key={it.id}>
+                        <td className="px-4 py-2 text-slate-600">{formatThaiDate(it.createdAt)}</td>
+                        <td className="px-4 py-2 font-semibold text-slate-800">{it.doctor.nickname}</td>
+                        <td className="px-4 py-2">{it.patient.firstNameTh} {it.patient.lastNameTh}</td>
+                        <td className="px-4 py-2 font-medium text-slate-900">
+                          {it.procedureName} {it.toothNumber ? `(#${it.toothNumber})` : ''}
+                        </td>
+                        <td className="px-4 py-2 text-right font-mono">{formatCurrency(it.netAmount)}</td>
+                        <td className="px-4 py-2 text-center font-mono text-slate-500">{it.dfRate}%</td>
+                        <td className="px-4 py-2 text-right font-mono font-bold text-sky-700">
+                          {formatCurrency(it.dfFinal)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

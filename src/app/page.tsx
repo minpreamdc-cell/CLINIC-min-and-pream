@@ -16,6 +16,8 @@ import {
   Filter,
   ChevronRight,
   ShieldAlert,
+  Volume2,
+  Tv,
 } from 'lucide-react';
 import { formatThaiDate, formatCurrency } from '@/lib/utils';
 import NewAppointmentModal from '@/components/NewAppointmentModal';
@@ -127,6 +129,38 @@ export default function TodayQueueCalendarPage() {
     }
   };
 
+  // Trigger Thai voice call & broadcast to TV Queue Screen
+  const handleCallQueueVoice = (v: any) => {
+    const patientName = `${v.patient.firstNameTh} ${v.patient.lastNameTh}`;
+    const roomName = v.room.name.split('(')[0].trim();
+    const doctorName = v.doctor.nickname || v.doctor.fullName;
+
+    try {
+      localStorage.setItem(
+        'clinic_tv_queue_call',
+        JSON.stringify({
+          queueNumber: v.queueNumber,
+          patientName,
+          roomName,
+          doctorName,
+          timestamp: Date.now(),
+        })
+      );
+    } catch {}
+
+    if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+      try {
+        window.speechSynthesis.cancel();
+        const utterance = new SpeechSynthesisUtterance(
+          `ขอเชิญหมายเลขคิวที่ ${v.queueNumber}, คุณ ${patientName}, ที่ ${roomName} ค่ะ`
+        );
+        utterance.lang = 'th-TH';
+        utterance.rate = 0.92;
+        window.speechSynthesis.speak(utterance);
+      } catch {}
+    }
+  };
+
   // Generate 30-min time slots from 09:00 to 18:30
   const timeSlots: string[] = [];
   for (let hour = 9; hour <= 18; hour++) {
@@ -162,8 +196,16 @@ export default function TodayQueueCalendarPage() {
           </span>
         </div>
 
-        {/* 4 Primary Action Buttons */}
+        {/* Primary Action Buttons */}
         <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/tv-queue"
+            target="_blank"
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-indigo-700 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 transition-colors flex items-center gap-1.5"
+          >
+            <Tv className="w-4 h-4 text-indigo-600" />
+            <span>เปิดจอ TV เรียกคิว</span>
+          </Link>
           <Link
             href="/patients"
             className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors flex items-center gap-1.5"
@@ -253,9 +295,21 @@ export default function TodayQueueCalendarPage() {
                         {v.doctor.nickname || v.doctor.fullName}
                       </span>
                       <div className="flex gap-1.5">
+                        <button
+                          type="button"
+                          onClick={() => handleCallQueueVoice(v)}
+                          title="กดเรียกเสียงขานคิวและแสดงบนจอ TV"
+                          className="px-2 py-1 text-[11px] font-semibold text-amber-800 bg-amber-100 hover:bg-amber-200 rounded-lg transition-all flex items-center gap-1"
+                        >
+                          <Volume2 className="w-3.5 h-3.5" />
+                          <span>เรียกคิว</span>
+                        </button>
                         <Link
                           href={`/emr/${v.id}`}
-                          onClick={() => handleUpdateVisitStatus(v.id, 'IN_EXAM')}
+                          onClick={() => {
+                            handleCallQueueVoice(v);
+                            handleUpdateVisitStatus(v.id, 'IN_EXAM');
+                          }}
                           className="px-2.5 py-1 text-[11px] font-semibold text-white bg-sky-600 hover:bg-sky-700 rounded-lg shadow-sm transition-all"
                         >
                           เข้าตรวจ EMR

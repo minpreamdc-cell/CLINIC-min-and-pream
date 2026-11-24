@@ -482,6 +482,43 @@ function BillingContent() {
                 />
               </div>
 
+              {/* Quick SSO 900 Baht Split-Billing Shortcut */}
+              {activeInvoice.balanceDue > 0 && (
+                <div className="p-3 bg-indigo-50/70 border border-indigo-200 rounded-xl text-xs flex flex-wrap items-center justify-between gap-2 text-indigo-950">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-indigo-600 shrink-0" />
+                    <span>
+                      ใช้สิทธิ <strong>ประกันสังคม (ขูด/อุด/ถอน 900฿/ปี)</strong> แยกบิลอัตโนมัติ:
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const ssoClaim = Math.min(900, activeInvoice.balanceDue);
+                      const patientPay = Math.max(0, activeInvoice.balanceDue - ssoClaim);
+                      const rows: any[] = [
+                        {
+                          method: 'INSURANCE_CLAIM',
+                          amount: String(ssoClaim),
+                          details: 'เบิกประกันสังคม ทันตกรรม 900฿',
+                        },
+                      ];
+                      if (patientPay > 0) {
+                        rows.push({
+                          method: 'TRANSFER',
+                          amount: String(patientPay),
+                          details: 'คนไข้ชำระส่วนต่าง PromptPay',
+                        });
+                      }
+                      setSplitPayments(rows);
+                    }}
+                    className="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-[11px] font-bold shadow-2xs"
+                  >
+                    ⚡ แยกยอดประกันสังคม 900฿ + ส่วนต่าง
+                  </button>
+                </div>
+              )}
+
               {/* Split Payment Channels */}
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -542,6 +579,63 @@ function BillingContent() {
                   ))}
                 </div>
               </div>
+
+              {/* Dynamic Thai PromptPay QR Display whenever TRANSFER / QR is selected */}
+              {(() => {
+                const qrRow = splitPayments.find(
+                  (p) => p.method === 'TRANSFER' && parseFloat(p.amount) > 0
+                );
+                if (!qrRow) return null;
+                const qrAmt = parseFloat(qrRow.amount) || 0;
+                return (
+                  <div className="p-4 rounded-2xl bg-gradient-to-r from-sky-900 to-teal-900 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-md">
+                    <div className="space-y-1 text-xs">
+                      <span className="px-2 py-0.5 rounded bg-sky-500/30 text-sky-200 font-bold text-[10px]">
+                        THAI QR PROMPTPAY • พร้อมเพย์คลินิก
+                      </span>
+                      <h4 className="text-sm font-black">
+                        สแกน QR เพื่อชำระเงินจำนวน {formatCurrency(qrAmt)}
+                      </h4>
+                      <p className="text-sky-200 text-[11px]">
+                        ชื่อบัญชี: บจก. คลินิกทันตกรรมหมอมิน หมอพรีม (PromptPay ID: 0105567012345)
+                      </p>
+                      <p className="text-emerald-300 text-[10px] font-semibold">
+                        ✓ ยอดเงินระบุใน QR อัตโนมัติ ไม่ต้องกรอกตัวเลขซ้ำ
+                      </p>
+                    </div>
+                    <div className="bg-white p-2.5 rounded-xl shadow-md shrink-0 flex flex-col items-center">
+                      {/* Crisp SVG QR Code representation */}
+                      <svg
+                        viewBox="0 0 100 100"
+                        className="w-24 h-24 text-slate-900"
+                        fill="currentColor"
+                      >
+                        <path d="M5,5 h28 v28 h-28 z M10,10 v18 h18 v-18 z M14,14 h10 v10 h-10 z" />
+                        <path d="M67,5 h28 v28 h-28 z M72,10 v18 h18 v-18 z M76,14 h10 v10 h-10 z" />
+                        <path d="M5,67 h28 v28 h-28 z M10,72 v18 h18 v-18 z M14,76 h10 v10 h-10 z" />
+                        <rect x="38" y="8" width="6" height="6" />
+                        <rect x="50" y="8" width="10" height="6" />
+                        <rect x="38" y="20" width="12" height="6" />
+                        <rect x="54" y="20" width="6" height="12" />
+                        <rect x="8" y="40" width="12" height="6" />
+                        <rect x="26" y="40" width="8" height="14" />
+                        <rect x="40" y="38" width="20" height="20" rx="3" fill="#0284c7" />
+                        <rect x="66" y="40" width="10" height="8" />
+                        <rect x="82" y="40" width="12" height="12" />
+                        <rect x="38" y="64" width="8" height="12" />
+                        <rect x="52" y="64" width="14" height="8" />
+                        <rect x="72" y="66" width="10" height="10" />
+                        <rect x="86" y="68" width="8" height="18" />
+                        <rect x="40" y="82" width="16" height="10" />
+                        <rect x="62" y="80" width="18" height="12" />
+                      </svg>
+                      <span className="text-[9px] font-mono font-bold text-sky-900 mt-1">
+                        {formatCurrency(qrAmt)}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Total & Remaining calculation */}
               <div className="p-3 bg-sky-50/70 border border-sky-200 rounded-xl space-y-1 text-xs">

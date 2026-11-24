@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { formatThaiDate, formatThaiDateTime, formatCurrency } from '@/lib/utils';
 import FdiToothChart from '@/components/FdiToothChart';
+import PatientClinicalDocsTab from '@/components/PatientClinicalDocsTab';
 
 export default function PatientProfilePage() {
   const params = useParams();
@@ -690,25 +691,9 @@ export default function PatientProfilePage() {
         </div>
       )}
 
-      {/* Tab 8: Documents & X-Rays */}
+      {/* Tab 8: Documents, X-Rays, Before/After, E-Consent & Medical Certificates */}
       {activeTab === 'documents' && (
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-800">เอกสารแนบ ภาพถ่าย และฟิล์ม X-Ray</h3>
-          </div>
-          {patient.documents && patient.documents.length === 0 ? (
-            <p className="text-xs text-slate-400 italic">ยังไม่มีเอกสารหรือภาพถ่ายแนบ</p>
-          ) : (
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {patient.documents.map((doc: any) => (
-                <div key={doc.id} className="p-3 rounded-xl border border-slate-200 bg-slate-50 text-xs">
-                  <span className="font-bold text-slate-800 block truncate">{doc.title}</span>
-                  <span className="text-[10px] text-slate-400">{doc.category}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        <PatientClinicalDocsTab patient={patient} onRefresh={fetchPatient} />
       )}
 
       {/* Deposit Modal */}
