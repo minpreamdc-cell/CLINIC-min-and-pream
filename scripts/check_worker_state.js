@@ -1,0 +1,7 @@
+const fs = require('fs');
+const src = fs.readFileSync('cloudflare/worker.js', 'utf8');
+const match = src.match(/const HTML_PAGE = ([\s\S]*?);\s*export default/);
+const html = JSON.parse(match[1]);
+
+const sIdx = html.indexOf('const STATE = {');
+console.log(html.slice(sIdx, sIdx + 500));
