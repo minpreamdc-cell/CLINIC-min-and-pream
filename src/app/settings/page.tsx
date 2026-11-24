@@ -90,7 +90,7 @@ export default function SettingsPage() {
       );
       fetchCloudSnapshots();
     } catch (err: any) {
-      alert(err.message || 'Cloud backup failed');
+      setCloudActionMsg(`❌ ${err.message || 'Cloud backup failed'}`);
     } finally {
       setCloudLoading(false);
     }
@@ -112,7 +112,7 @@ export default function SettingsPage() {
       if (!res.ok) throw new Error(data.error);
       setCloudActionMsg(`🔄 ${data.message}`);
     } catch (err: any) {
-      alert(err.message || 'Restore failed');
+      setCloudActionMsg(`❌ ${err.message || 'Restore failed'}`);
     } finally {
       setCloudLoading(false);
     }
@@ -166,7 +166,6 @@ export default function SettingsPage() {
       // Parse CSV rows
       const lines = csvText.trim().split('\n');
       if (lines.length <= 1) {
-        alert('กรุณาระบุข้อมูล CSV อย่างน้อย 1 แถว');
         return;
       }
 
@@ -193,7 +192,7 @@ export default function SettingsPage() {
       const data = await res.json();
       setImportResult(data);
     } catch (e: any) {
-      alert(e.message || 'Import failed');
+      console.error(e.message || 'Import failed');
     } finally {
       setImporting(false);
     }

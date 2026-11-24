@@ -111,7 +111,7 @@ export default function InventoryPage() {
       setMoveReason('');
       fetchInventory();
     } catch (err: any) {
-      alert(err.message || 'Movement failed');
+      console.error(err.message || 'Movement failed');
     } finally {
       setMoveLoading(false);
     }

@@ -112,7 +112,7 @@ export default function TodayQueueCalendarPage() {
       if (!res.ok) throw new Error(data.error);
       fetchData();
     } catch (err: any) {
-      alert(err.message || 'Check-in failed');
+      console.error(err.message || 'Check-in failed');
     }
   };
 

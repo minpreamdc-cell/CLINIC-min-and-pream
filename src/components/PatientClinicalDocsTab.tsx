@@ -220,7 +220,6 @@ export default function PatientClinicalDocsTab({
           fileType: 'image/png',
         }),
       });
-      alert('บันทึกใบยินยอมพร้อมลายเซ็นอิเล็กทรอนิกส์เข้าแฟ้มคนไข้เรียบร้อยแล้ว');
       clearSignature();
       onRefresh();
       setSubTab('gallery');

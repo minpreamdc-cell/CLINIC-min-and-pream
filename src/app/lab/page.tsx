@@ -69,7 +69,6 @@ export default function DentalLabPage() {
   const handleCreateOrder = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedPatient || !doctorId || !dueDate) {
-      alert('กรุณากรอกข้อมูลให้ครบถ้วน');
       return;
     }
     setSubmitting(true);

@@ -56,11 +56,10 @@ export default function ReceiptDetailPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      alert(data.message);
       setIsVoidModalOpen(false);
       fetchReceipt();
     } catch (err: any) {
-      alert(err.message || 'Void failed');
+      console.error(err.message || 'Void failed');
     } finally {
       setVoidLoading(false);
     }

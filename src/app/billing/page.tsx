@@ -193,7 +193,6 @@ function BillingContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      alert(data.message);
       setActiveInvoice(null);
       fetchBillingData();
     } catch (err: any) {

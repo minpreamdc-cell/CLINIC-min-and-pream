@@ -133,10 +133,9 @@ export default function AppointmentsPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
-      alert(data.message);
       fetchAppointments();
     } catch (err: any) {
-      alert(err.message || 'Check-in failed');
+      console.error(err.message || 'Check-in failed');
     }
   };
 
@@ -395,13 +394,23 @@ export default function AppointmentsPage() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">เวลาใหม่</label>
-                <input
-                  type="time"
+                <label className="block text-xs font-semibold text-slate-700 mb-1">เวลาใหม่ (24 ชม.)</label>
+                <select
                   value={newTime}
                   onChange={(e) => setNewTime(e.target.value)}
-                  className="w-full px-3 py-1.5 text-xs border border-slate-300 rounded-lg"
-                />
+                  className="w-full px-3 py-1.5 text-xs font-mono font-bold border border-slate-300 rounded-lg bg-white"
+                >
+                  {[
+                    '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
+                    '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+                    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
+                    '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00',
+                  ].map((t) => (
+                    <option key={t} value={t}>
+                      {t} น.
+                    </option>
+                  ))}
+                </select>
               </div>
             </div>
 

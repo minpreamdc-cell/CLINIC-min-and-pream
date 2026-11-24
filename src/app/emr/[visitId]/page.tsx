@@ -250,7 +250,7 @@ export default function ClinicalExamEmrPage() {
       setEditReason('');
       await fetchEmrData();
     } catch (err: any) {
-      alert(err.message || 'Failed to save EMR');
+      console.error(err.message || 'Failed to save EMR');
     } finally {
       setSavingEmr(false);
     }
@@ -303,7 +303,7 @@ export default function ClinicalExamEmrPage() {
       setToothNumber('');
       fetchEmrData();
     } catch (err: any) {
-      alert(err.message || 'Failed to add procedure');
+      console.error(err.message || 'Failed to add procedure');
     } finally {
       setProcLoading(false);
     }
@@ -344,7 +344,7 @@ export default function ClinicalExamEmrPage() {
 
       fetchEmrData();
     } catch (err: any) {
-      alert(err.message || 'Failed to add prescription');
+      console.error(err.message || 'Failed to add prescription');
     } finally {
       setPrescLoading(false);
     }

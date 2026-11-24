@@ -253,13 +253,23 @@ export default function NewAppointmentModal({
               />
             </div>
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">เวลาเริ่ม *</label>
-              <input
-                type="time"
+              <label className="block text-xs font-semibold text-slate-700 mb-1">เวลาเริ่ม (24 ชม.) *</label>
+              <select
                 value={startTime}
                 onChange={(e) => setStartTime(e.target.value)}
-                className="w-full px-3 py-2 text-xs border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:outline-none bg-white"
-              />
+                className="w-full px-3 py-2 text-xs font-mono font-bold border border-slate-300 rounded-xl focus:ring-2 focus:ring-sky-500 focus:outline-none bg-white"
+              >
+                {[
+                  '08:00', '08:30', '09:00', '09:30', '10:00', '10:30',
+                  '11:00', '11:30', '12:00', '12:30', '13:00', '13:30',
+                  '14:00', '14:30', '15:00', '15:30', '16:00', '16:30',
+                  '17:00', '17:30', '18:00', '18:30', '19:00', '19:30', '20:00',
+                ].map((t) => (
+                  <option key={t} value={t}>
+                    {t} น.
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="block text-xs font-semibold text-slate-700 mb-1">ระยะเวลา (นาที)</label>

@@ -126,10 +126,9 @@ export default function ReportsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      alert('บันทึกปิดยอดประจำวันสำเร็จ');
       fetchDailyClose();
     } catch (err: any) {
-      alert(err.message || 'Daily close failed');
+      console.error(err.message || 'Daily close failed');
     } finally {
       setCloseLoading(false);
     }
@@ -137,7 +136,6 @@ export default function ReportsPage() {
 
   const handleReopenDailyClose = async () => {
     if (!dailyCloseData?.existingClose || !reopenReason) {
-      alert('กรุณาระบุเหตุผลการขอเปิดแก้ยอดที่ปิดแล้ว');
       return;
     }
     try {
@@ -152,11 +150,10 @@ export default function ReportsPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error);
 
-      alert('ปลดล็อคยอดที่ปิดแล้วสำเร็จ');
       setReopenReason('');
       fetchDailyClose();
     } catch (err: any) {
-      alert(err.message || 'Failed to reopen');
+      console.error(err.message || 'Failed to reopen');
     }
   };
 

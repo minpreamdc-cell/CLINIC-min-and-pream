@@ -87,7 +87,7 @@ export default function PatientProfilePage() {
       setDepositNotes('');
       fetchPatient();
     } catch (err: any) {
-      alert(err.message || 'Deposit failed');
+      console.error(err.message || 'Deposit failed');
     } finally {
       setDepositLoading(false);
     }
