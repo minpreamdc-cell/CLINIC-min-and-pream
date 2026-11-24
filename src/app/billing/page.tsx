@@ -40,6 +40,30 @@ function BillingContent() {
   const [payLoading, setPayLoading] = useState(false);
   const [payError, setPayError] = useState<string | null>(null);
 
+  // Easy Petty Cash / Daily Clinic Expenses state
+  const [expenses, setExpenses] = useState<
+    { id: number; title: string; category: string; amount: number; time: string }[]
+  >([
+    { id: 1, title: 'ค่าแมสเซนเจอร์รับ-ส่งงานแลปครอบฟัน', category: 'ขนส่ง/งานแลป', amount: 120, time: '10:15' },
+    { id: 2, title: 'ค่าน้ำดื่มรับรองคนไข้ 3 แพ็ก', category: 'วัสดุสิ้นเปลือง', amount: 150, time: '11:30' },
+  ]);
+  const [expTitle, setExpTitle] = useState('');
+  const [expAmount, setExpAmount] = useState('');
+  const [expCategory, setExpCategory] = useState('ขนส่ง/งานแลป');
+
+  const handleQuickAddExpense = (title: string, category: string, amount: number) => {
+    const nowTime = new Date().toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+    setExpenses([{ id: Date.now(), title, category, amount, time: nowTime }, ...expenses]);
+  };
+
+  const handleManualAddExpense = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!expTitle || !expAmount) return;
+    handleQuickAddExpense(expTitle, expCategory, Number(expAmount));
+    setExpTitle('');
+    setExpAmount('');
+  };
+
   const fetchBillingData = async () => {
     setLoading(true);
     try {
@@ -389,6 +413,85 @@ function BillingContent() {
               )}
             </tbody>
           </table>
+        </div>
+      </div>
+
+      {/* Easy 1-Click Petty Cash & Daily Clinic Expense Box */}
+      <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 pb-3">
+          <div>
+            <h3 className="text-sm font-bold text-slate-800 flex items-center gap-2">
+              <Coins className="w-4 h-4 text-amber-600" />
+              <span>บันทึกรายจ่ายย่อยประจำวัน (เงินสดย่อยหน้าเคาน์เตอร์ / Petty Cash)</span>
+            </h3>
+            <p className="text-xs text-slate-500">
+              กดปุ่มลัดเพื่อบันทึกรายจ่ายหน้าร้านได้ทันที ช่วยให้ตอนนับเงินสดปิดกะตอนเย็นตรงเป๊ะ
+            </p>
+          </div>
+          <div className="px-3.5 py-1.5 rounded-xl bg-rose-50 border border-rose-200 text-xs">
+            <span className="text-rose-700 font-semibold">รวมรายจ่ายย่อยวันนี้: </span>
+            <strong className="font-mono font-black text-rose-900 text-sm">
+              {formatCurrency(expenses.reduce((s, e) => s + e.amount, 0))}
+            </strong>
+          </div>
+        </div>
+
+        {/* 1-Click Expense Buttons */}
+        <div className="flex flex-wrap items-center gap-2 text-xs">
+          <span className="font-bold text-slate-600">กดปุ่มลัดรายจ่ายที่ใช้บ่อย:</span>
+          {[
+            { title: '🛵 ค่าแมสเซนเจอร์ส่งแลป', cat: 'ขนส่ง/งานแลป', amt: 100 },
+            { title: '💧 ซื้อน้ำดื่มรับรองคนไข้', cat: 'รับรองคนไข้', amt: 150 },
+            { title: '🧻 ทิชชู่ / น้ำยาทำความสะอาด', cat: 'ของใช้คลินิก', amt: 120 },
+            { title: '📦 ค่าส่งพัสดุไปรษณีย์', cat: 'ขนส่ง/งานแลป', amt: 60 },
+          ].map((q, idx) => (
+            <button
+              key={idx}
+              type="button"
+              onClick={() => handleQuickAddExpense(q.title, q.cat, q.amt)}
+              className="px-3 py-1.5 rounded-xl bg-amber-50 hover:bg-amber-600 hover:text-white text-amber-900 border border-amber-200 font-bold transition-all"
+            >
+              + {q.title} ({q.amt}฿)
+            </button>
+          ))}
+        </div>
+
+        <form onSubmit={handleManualAddExpense} className="flex flex-wrap items-center gap-2 text-xs">
+          <input
+            type="text"
+            placeholder="ระบุรายการจ่ายอื่นๆ เช่น ค่าซ่อมหลอดไฟ..."
+            value={expTitle}
+            onChange={(e) => setExpTitle(e.target.value)}
+            className="flex-1 min-w-[200px] px-3 py-1.5 border border-slate-300 rounded-xl"
+          />
+          <input
+            type="number"
+            placeholder="จำนวนเงิน (บาท)"
+            value={expAmount}
+            onChange={(e) => setExpAmount(e.target.value)}
+            className="w-36 px-3 py-1.5 border border-slate-300 rounded-xl font-mono font-bold"
+          />
+          <button
+            type="submit"
+            className="px-4 py-1.5 bg-slate-800 hover:bg-slate-900 text-white font-bold rounded-xl"
+          >
+            + บันทึกรายจ่าย
+          </button>
+        </form>
+
+        <div className="divide-y divide-slate-100 text-xs bg-slate-50 rounded-xl border border-slate-200 px-3">
+          {expenses.map((ex) => (
+            <div key={ex.id} className="py-2 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-[11px] text-slate-400">{ex.time} น.</span>
+                <span className="font-semibold text-slate-800">{ex.title}</span>
+                <span className="px-2 py-0.5 rounded bg-white border border-slate-200 text-[10px] text-slate-500">
+                  {ex.category}
+                </span>
+              </div>
+              <span className="font-mono font-bold text-rose-600">-{formatCurrency(ex.amount)}</span>
+            </div>
+          ))}
         </div>
       </div>
 

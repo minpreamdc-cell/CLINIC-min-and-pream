@@ -31,6 +31,7 @@ export const MENU_PERMISSIONS: Record<string, UserRole[]> = {
   ortho: ['ADMIN', 'COUNTER', 'DENTIST'],
   lab: ['ADMIN', 'DENTIST', 'ASSISTANT', 'COUNTER'],
   inventory: ['ADMIN', 'COUNTER', 'ASSISTANT', 'FINANCE'],
+  operations: ['ADMIN', 'DENTIST', 'ASSISTANT', 'COUNTER'],
   reports: ['ADMIN', 'FINANCE', 'DENTIST'],
   settings: ['ADMIN', 'COUNTER', 'FINANCE'],
 };

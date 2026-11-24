@@ -23,6 +23,7 @@ import {
   X,
   Tv,
   BellRing,
+  ShieldCheck,
 } from 'lucide-react';
 import { SessionUser, UserRole, ROLE_NAMES_TH, MENU_PERMISSIONS } from '@/lib/auth-types';
 import { formatThaiDate } from '@/lib/utils';
@@ -118,6 +119,7 @@ export default function Navbar() {
     { key: 'ortho', label: 'จัดฟัน', href: '/ortho', icon: Smile },
     { key: 'lab', label: 'งานแลป', href: '/lab', icon: FlaskConical },
     { key: 'inventory', label: 'คลังเวชภัณฑ์', href: '/inventory', icon: Package },
+    { key: 'operations', label: 'อบเครื่องมือ & ตารางหมอ', href: '/operations', icon: ShieldCheck },
     { key: 'reports', label: 'รายงาน & DF แพทย์', href: '/reports', icon: BarChart3 },
     { key: 'settings', label: 'ตั้งค่า', href: '/settings', icon: Settings },
   ];
