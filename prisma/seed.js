@@ -104,12 +104,12 @@ async function main() {
     },
   });
 
-  // 3. Rooms
+  // 3. Rooms (Strictly 2 Exam Rooms for หมอมิน & หมอพรีม)
   const room1 = await prisma.room.create({
     data: {
       branchId: branch.id,
-      name: 'ห้องตรวจ 1 (ทันตกรรมจัดฟัน & ทั่วไป)',
-      chairNumber: 'ยูนิตทำฟัน 1 (A-Sky Blue)',
+      name: 'ห้องตรวจ 1 (หมอมิน)',
+      chairNumber: 'ยูนิตทำฟัน 1',
       colorCode: '#0284c7',
       isActive: true,
     },
@@ -118,19 +118,9 @@ async function main() {
   const room2 = await prisma.room.create({
     data: {
       branchId: branch.id,
-      name: 'ห้องตรวจ 2 (รักษาราก & เพื่อความงาม)',
-      chairNumber: 'ยูนิตทำฟัน 2 (B-Mint Green)',
+      name: 'ห้องตรวจ 2 (หมอพรีม)',
+      chairNumber: 'ยูนิตทำฟัน 2',
       colorCode: '#0d9488',
-      isActive: true,
-    },
-  });
-
-  const room3 = await prisma.room.create({
-    data: {
-      branchId: branch.id,
-      name: 'ห้องเอกซเรย์ดิจิทัล',
-      chairNumber: 'CT & Panoramic Room',
-      colorCode: '#8b5cf6',
       isActive: true,
     },
   });
