@@ -209,81 +209,93 @@ export default function TvQueueDisplayPage() {
         </div>
       </div>
 
-      {/* Main Content Grid */}
+      {/* Main Content Grid: Clean 2-Column Layout (No Cramped Sub-Columns) */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 my-6 flex-1">
-        {/* Left 5 cols: Now Calling Spotlight + Active Exam Rooms */}
-        <div className="lg:col-span-5 flex flex-col gap-6">
+        {/* Left 6 cols: Now Calling Spotlight + Billing Counter */}
+        <div className="lg:col-span-6 flex flex-col gap-6">
           {/* Spotlight Card */}
-          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-500 via-sky-600 to-teal-600 p-6 md:p-8 shadow-2xl border border-white/20 flex-1 flex flex-col justify-center">
-            <div className="flex items-center justify-between mb-3">
-              <span className="px-3 py-1 rounded-full bg-white/20 text-white text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
-                <BellRing className="w-3.5 h-3.5 animate-bounce" />
-                <span>กำลังเรียกคิวเข้าห้องตรวจ (Now Calling)</span>
+          <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-sky-500 via-sky-600 to-teal-600 p-6 md:p-8 shadow-2xl border border-white/20 flex-1 flex flex-col justify-between min-h-[260px]">
+            <div className="flex items-center justify-between gap-3">
+              <span className="px-3.5 py-1.5 rounded-full bg-white/20 text-white text-xs font-bold tracking-wide flex items-center gap-2 whitespace-nowrap">
+                <BellRing className="w-4 h-4 animate-bounce shrink-0" />
+                <span>กำลังเรียกคิวเข้าห้องตรวจ</span>
               </span>
+              {activeCall && (
+                <span className="px-3 py-1 rounded-full bg-amber-400/20 border border-amber-300/40 text-amber-200 text-xs font-bold whitespace-nowrap">
+                  เชิญเข้าห้องตรวจทันที
+                </span>
+              )}
             </div>
 
             {activeCall ? (
-              <div className="my-auto space-y-4">
-                <div className="flex items-baseline gap-4">
-                  <span className="text-sm font-bold text-sky-100 uppercase">หมายเลขคิว</span>
-                  <span className="text-6xl md:text-7xl font-black font-mono tracking-tighter text-white drop-shadow">
-                    #{String(activeCall.queueNumber).padStart(2, '0')}
-                  </span>
+              <div className="my-4 space-y-5">
+                <div className="flex items-center justify-between gap-4 bg-black/15 rounded-2xl p-4 border border-white/10">
+                  <div>
+                    <span className="text-xs font-bold text-sky-100 block mb-1">หมายเลขคิว</span>
+                    <span className="text-5xl md:text-6xl font-black font-mono tracking-tight text-white drop-shadow">
+                      #{String(activeCall.queueNumber).padStart(2, '0')}
+                    </span>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-bold text-sky-100 block mb-1.5">ห้องตรวจ</span>
+                    <span className="inline-block px-4 py-2 rounded-xl bg-amber-400 text-slate-950 font-black text-base md:text-lg shadow-md whitespace-nowrap">
+                      {activeCall.roomName}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="text-2xl md:text-3xl font-black text-white truncate">
+
+                <div className="flex flex-wrap items-baseline justify-between gap-2 px-1">
+                  <h2 className="text-2xl md:text-3xl font-black text-white">
                     คุณ {activeCall.patientName}
                   </h2>
-                  <p className="text-sky-100 text-sm mt-1">
+                  <p className="text-sky-100 text-sm font-medium whitespace-nowrap">
                     ทันตแพทย์: {activeCall.doctorName}
                   </p>
                 </div>
-                <div className="pt-3 border-t border-white/20 flex items-center justify-between">
-                  <span className="text-xs text-sky-100">เชิญเข้าที่:</span>
-                  <span className="px-4 py-1.5 rounded-2xl bg-amber-400 text-slate-950 font-black text-lg md:text-xl shadow-md">
-                    {activeCall.roomName}
-                  </span>
-                </div>
               </div>
             ) : (
-              <div className="my-auto py-12 text-center text-sky-100/80">
-                <p className="text-lg font-bold">ยังไม่มีคิวที่กำลังเรียกในขณะนี้</p>
-                <p className="text-xs mt-1">กรุณารอเจ้าหน้าที่เรียกคิวของท่าน</p>
+              <div className="my-auto py-10 text-center text-sky-100/90">
+                <p className="text-xl font-bold">ยังไม่มีคิวที่กำลังเรียกในขณะนี้</p>
+                <p className="text-xs mt-1.5 text-sky-200/80">กรุณารอเจ้าหน้าที่เรียกคิวของท่าน</p>
               </div>
             )}
           </div>
 
           {/* Waiting for Payment Counter Box */}
-          <div className="rounded-3xl bg-white/10 backdrop-blur-md border border-emerald-400/30 p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <CreditCard className="w-5 h-5 text-emerald-400" />
-                <h3 className="text-base font-bold text-emerald-300">
-                  เชิญติดต่อช่องชำระเงิน / รับยา (Billing Counter)
+          <div className="rounded-3xl bg-white/10 backdrop-blur-md border border-emerald-400/30 p-6">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <CreditCard className="w-5 h-5 text-emerald-400 shrink-0" />
+                <h3 className="text-base md:text-lg font-bold text-emerald-300 truncate">
+                  เชิญติดต่อช่องชำระเงิน / รับยา
                 </h3>
               </div>
-              <span className="px-2.5 py-0.5 rounded-full bg-emerald-500 text-slate-950 font-black text-xs">
+              <span className="px-3.5 py-1 rounded-full bg-emerald-500 text-slate-950 font-black text-xs whitespace-nowrap shrink-0">
                 {waitingPaymentVisits.length} คิว
               </span>
             </div>
             {waitingPaymentVisits.length === 0 ? (
-              <p className="text-xs text-slate-400 py-3 text-center">ไม่มีคิวรอชำระเงิน</p>
+              <p className="text-sm text-slate-400 py-4 text-center bg-white/5 rounded-2xl border border-white/5">
+                ไม่มีคิวรอชำระเงินในขณะนี้
+              </p>
             ) : (
-              <div className="grid grid-cols-2 gap-2.5">
+              <div className="space-y-2.5">
                 {waitingPaymentVisits.map((v) => (
                   <div
                     key={v.id}
-                    className="p-3 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center gap-3"
+                    className="p-3.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-between gap-4"
                   >
-                    <span className="w-10 h-10 rounded-xl bg-emerald-400 text-slate-950 font-black font-mono text-lg flex items-center justify-center shrink-0">
-                      {String(v.queueNumber).padStart(2, '0')}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="font-bold text-sm text-white truncate">
-                        คุณ {v.patient.firstNameTh}
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <span className="w-11 h-11 rounded-xl bg-emerald-400 text-slate-950 font-black font-mono text-lg flex items-center justify-center shrink-0">
+                        #{String(v.queueNumber).padStart(2, '0')}
+                      </span>
+                      <p className="font-bold text-base text-white truncate">
+                        คุณ {v.patient.firstNameTh} {v.patient.lastNameTh}
                       </p>
-                      <p className="text-[11px] text-emerald-200 truncate">เชิญที่เคาน์เตอร์การเงิน</p>
                     </div>
+                    <span className="px-3 py-1 rounded-lg bg-emerald-400/20 text-emerald-200 text-xs font-bold whitespace-nowrap shrink-0">
+                      เคาน์เตอร์การเงิน
+                    </span>
                   </div>
                 ))}
               </div>
@@ -291,46 +303,91 @@ export default function TvQueueDisplayPage() {
           </div>
         </div>
 
-        {/* Right 7 cols: Active Exam Rooms & Waiting Queue List */}
-        <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Column 1: Currently in Exam Rooms */}
-          <div className="rounded-3xl bg-white/5 border border-white/10 p-6 flex flex-col">
-            <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 mb-4">
-              <div className="flex items-center gap-2 min-w-0">
-                <Stethoscope className="w-5 h-5 text-sky-400 shrink-0" />
-                <h3 className="text-base xl:text-lg font-bold text-white leading-snug">กำลังตรวจรักษา (In Exam)</h3>
+        {/* Right 6 cols: Stacked Full-Width Cards (Waiting Queue on Top, In Exam on Bottom) */}
+        <div className="lg:col-span-6 flex flex-col gap-6">
+          {/* Card 1: Waiting Queue (Full Width so names never wrap vertically) */}
+          <div className="rounded-3xl bg-white/5 border border-white/10 p-6 flex flex-col flex-1">
+            <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-3.5 mb-4">
+              <div className="flex items-center gap-2.5">
+                <Clock className="w-5 h-5 text-amber-400 shrink-0" />
+                <h3 className="text-lg font-bold text-white">คิวรอเรียกตรวจ</h3>
               </div>
-              <span className="px-3 py-1 rounded-full bg-sky-500 text-white font-black text-xs whitespace-nowrap shrink-0">
+              <span className="px-3.5 py-1 rounded-full bg-amber-500 text-slate-950 font-black text-xs whitespace-nowrap shrink-0">
+                {waitingExamVisits.length} คิว
+              </span>
+            </div>
+
+            <div className="space-y-3 flex-1 overflow-y-auto">
+              {waitingExamVisits.length === 0 ? (
+                <div className="py-10 text-center text-slate-400 text-sm bg-white/5 rounded-2xl border border-white/5">
+                  ไม่มีคิวรอตรวจในขณะนี้
+                </div>
+              ) : (
+                waitingExamVisits.map((v, idx) => (
+                  <div
+                    key={v.id}
+                    className="p-4 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-between gap-4 transition-colors"
+                  >
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      <span className="w-12 h-12 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 font-black font-mono text-lg flex items-center justify-center shrink-0">
+                        #{String(v.queueNumber).padStart(2, '0')}
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-base md:text-lg text-white truncate">
+                          คุณ {v.patient.firstNameTh} {v.patient.lastNameTh}
+                        </p>
+                        <p className="text-xs text-slate-300 mt-0.5 truncate">
+                          นัดกับ: {v.doctor.nickname || v.doctor.fullName}
+                        </p>
+                      </div>
+                    </div>
+                    <span className="px-3.5 py-1.5 rounded-xl bg-amber-500/20 border border-amber-400/30 text-amber-300 text-xs font-bold whitespace-nowrap shrink-0">
+                      ลำดับถัดไป #{idx + 1}
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Card 2: Currently in Exam Rooms (Full Width) */}
+          <div className="rounded-3xl bg-white/5 border border-white/10 p-6 flex flex-col flex-1">
+            <div className="flex items-center justify-between gap-4 border-b border-white/10 pb-3.5 mb-4">
+              <div className="flex items-center gap-2.5">
+                <Stethoscope className="w-5 h-5 text-sky-400 shrink-0" />
+                <h3 className="text-lg font-bold text-white">กำลังตรวจรักษา</h3>
+              </div>
+              <span className="px-3.5 py-1 rounded-full bg-sky-500 text-white font-black text-xs whitespace-nowrap shrink-0">
                 {inExamVisits.length} ห้อง
               </span>
             </div>
 
             <div className="space-y-3 flex-1 overflow-y-auto">
               {inExamVisits.length === 0 ? (
-                <div className="py-16 text-center text-slate-400 text-sm">
+                <div className="py-10 text-center text-slate-400 text-sm bg-white/5 rounded-2xl border border-white/5">
                   ห้องตรวจว่างทั้งหมด
                 </div>
               ) : (
                 inExamVisits.map((v) => (
                   <div
                     key={v.id}
-                    className="p-4 rounded-2xl bg-sky-500/15 border border-sky-400/30 flex flex-wrap items-center justify-between gap-3"
+                    className="p-4 rounded-2xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-between gap-4"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                      <span className="w-12 h-12 rounded-2xl bg-sky-400 text-slate-950 font-black font-mono text-xl flex items-center justify-center shrink-0">
+                    <div className="flex items-center gap-4 min-w-0 flex-1">
+                      <span className="w-12 h-12 rounded-2xl bg-sky-400 text-slate-950 font-black font-mono text-lg flex items-center justify-center shrink-0">
                         #{String(v.queueNumber).padStart(2, '0')}
                       </span>
                       <div className="min-w-0 flex-1">
-                        <p className="font-bold text-base text-white leading-relaxed break-words">
+                        <p className="font-bold text-base md:text-lg text-white truncate">
                           คุณ {v.patient.firstNameTh} {v.patient.lastNameTh}
                         </p>
-                        <p className="text-xs text-sky-300 leading-relaxed">
+                        <p className="text-xs text-sky-300 mt-0.5 truncate">
                           ทันตแพทย์: {v.doctor.nickname || v.doctor.fullName}
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
-                      <span className="px-3 py-1.5 rounded-xl bg-white/15 text-amber-300 font-bold text-xs whitespace-nowrap">
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <span className="px-3.5 py-1.5 rounded-xl bg-white/15 text-amber-300 font-bold text-xs whitespace-nowrap">
                         {v.room.name.split('(')[0]}
                       </span>
                       <button
@@ -350,57 +407,12 @@ export default function TvQueueDisplayPage() {
                             payload.roomName
                           );
                         }}
-                        className="p-2 rounded-xl bg-sky-500 hover:bg-sky-400 text-white"
+                        className="p-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-white transition-colors"
                         title="กดเรียกเสียงขานคิว"
                       >
                         <Volume2 className="w-4 h-4" />
                       </button>
                     </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-
-          {/* Column 2: Waiting Queue */}
-          <div className="rounded-3xl bg-white/5 border border-white/10 p-6 flex flex-col">
-            <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 mb-4">
-              <div className="flex items-center gap-2 min-w-0">
-                <Clock className="w-5 h-5 text-amber-400 shrink-0" />
-                <h3 className="text-base xl:text-lg font-bold text-white leading-snug">คิวรอเรียกตรวจ (Waiting)</h3>
-              </div>
-              <span className="px-3 py-1 rounded-full bg-amber-500 text-slate-950 font-black text-xs whitespace-nowrap shrink-0">
-                {waitingExamVisits.length} คิว
-              </span>
-            </div>
-
-            <div className="space-y-3 flex-1 overflow-y-auto">
-              {waitingExamVisits.length === 0 ? (
-                <div className="py-16 text-center text-slate-400 text-sm">
-                  ไม่มีคิวรอตรวจในขณะนี้
-                </div>
-              ) : (
-                waitingExamVisits.map((v, idx) => (
-                  <div
-                    key={v.id}
-                    className="p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-wrap items-center justify-between gap-3"
-                  >
-                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
-                      <span className="w-11 h-11 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 font-black font-mono text-lg flex items-center justify-center shrink-0">
-                        #{String(v.queueNumber).padStart(2, '0')}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <p className="font-bold text-base text-white leading-relaxed break-words">
-                          คุณ {v.patient.firstNameTh} {v.patient.lastNameTh}
-                        </p>
-                        <p className="text-xs text-slate-300 leading-relaxed">
-                          นัดกับ: {v.doctor.nickname || v.doctor.fullName}
-                        </p>
-                      </div>
-                    </div>
-                    <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 text-xs font-semibold whitespace-nowrap shrink-0">
-                      ลำดับถัดไป #{idx + 1}
-                    </span>
                   </div>
                 ))
               )}
