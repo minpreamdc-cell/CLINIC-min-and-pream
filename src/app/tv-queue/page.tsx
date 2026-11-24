@@ -295,12 +295,12 @@ export default function TvQueueDisplayPage() {
         <div className="lg:col-span-7 grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Column 1: Currently in Exam Rooms */}
           <div className="rounded-3xl bg-white/5 border border-white/10 p-6 flex flex-col">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <Stethoscope className="w-5 h-5 text-sky-400" />
-                <h3 className="text-lg font-bold text-white">กำลังตรวจรักษา (In Exam)</h3>
+            <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 mb-4">
+              <div className="flex items-center gap-2 min-w-0">
+                <Stethoscope className="w-5 h-5 text-sky-400 shrink-0" />
+                <h3 className="text-base xl:text-lg font-bold text-white leading-snug">กำลังตรวจรักษา (In Exam)</h3>
               </div>
-              <span className="px-3 py-0.5 rounded-full bg-sky-500 text-white font-black text-xs">
+              <span className="px-3 py-1 rounded-full bg-sky-500 text-white font-black text-xs whitespace-nowrap shrink-0">
                 {inExamVisits.length} ห้อง
               </span>
             </div>
@@ -314,23 +314,23 @@ export default function TvQueueDisplayPage() {
                 inExamVisits.map((v) => (
                   <div
                     key={v.id}
-                    className="p-4 rounded-2xl bg-sky-500/15 border border-sky-400/30 flex items-center justify-between gap-3"
+                    className="p-4 rounded-2xl bg-sky-500/15 border border-sky-400/30 flex flex-wrap items-center justify-between gap-3"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
                       <span className="w-12 h-12 rounded-2xl bg-sky-400 text-slate-950 font-black font-mono text-xl flex items-center justify-center shrink-0">
                         #{String(v.queueNumber).padStart(2, '0')}
                       </span>
-                      <div className="min-w-0">
-                        <p className="font-bold text-base text-white truncate">
-                          คุณ {v.patient.firstNameTh} {v.patient.lastNameTh.charAt(0)}.
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-base text-white leading-relaxed break-words">
+                          คุณ {v.patient.firstNameTh} {v.patient.lastNameTh}
                         </p>
-                        <p className="text-xs text-sky-300 truncate">
-                          {v.doctor.nickname || v.doctor.fullName}
+                        <p className="text-xs text-sky-300 leading-relaxed">
+                          ทันตแพทย์: {v.doctor.nickname || v.doctor.fullName}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="px-3 py-1.5 rounded-xl bg-white/15 text-amber-300 font-bold text-xs">
+                      <span className="px-3 py-1.5 rounded-xl bg-white/15 text-amber-300 font-bold text-xs whitespace-nowrap">
                         {v.room.name.split('(')[0]}
                       </span>
                       <button
@@ -364,12 +364,12 @@ export default function TvQueueDisplayPage() {
 
           {/* Column 2: Waiting Queue */}
           <div className="rounded-3xl bg-white/5 border border-white/10 p-6 flex flex-col">
-            <div className="flex items-center justify-between border-b border-white/10 pb-3 mb-4">
-              <div className="flex items-center gap-2">
-                <Clock className="w-5 h-5 text-amber-400" />
-                <h3 className="text-lg font-bold text-white">คิวรอเรียกตรวจ (Waiting)</h3>
+            <div className="flex items-center justify-between gap-3 border-b border-white/10 pb-3 mb-4">
+              <div className="flex items-center gap-2 min-w-0">
+                <Clock className="w-5 h-5 text-amber-400 shrink-0" />
+                <h3 className="text-base xl:text-lg font-bold text-white leading-snug">คิวรอเรียกตรวจ (Waiting)</h3>
               </div>
-              <span className="px-3 py-0.5 rounded-full bg-amber-500 text-slate-950 font-black text-xs">
+              <span className="px-3 py-1 rounded-full bg-amber-500 text-slate-950 font-black text-xs whitespace-nowrap shrink-0">
                 {waitingExamVisits.length} คิว
               </span>
             </div>
@@ -383,22 +383,22 @@ export default function TvQueueDisplayPage() {
                 waitingExamVisits.map((v, idx) => (
                   <div
                     key={v.id}
-                    className="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-between gap-3"
+                    className="p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-wrap items-center justify-between gap-3"
                   >
-                    <div className="flex items-center gap-3.5 min-w-0">
+                    <div className="flex items-center gap-3.5 min-w-0 flex-1">
                       <span className="w-11 h-11 rounded-2xl bg-amber-400/20 border border-amber-400/40 text-amber-300 font-black font-mono text-lg flex items-center justify-center shrink-0">
                         #{String(v.queueNumber).padStart(2, '0')}
                       </span>
-                      <div className="min-w-0">
-                        <p className="font-bold text-base text-white truncate">
-                          คุณ {v.patient.firstNameTh} {v.patient.lastNameTh.charAt(0)}.
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-base text-white leading-relaxed break-words">
+                          คุณ {v.patient.firstNameTh} {v.patient.lastNameTh}
                         </p>
-                        <p className="text-xs text-slate-300 truncate">
+                        <p className="text-xs text-slate-300 leading-relaxed">
                           นัดกับ: {v.doctor.nickname || v.doctor.fullName}
                         </p>
                       </div>
                     </div>
-                    <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 text-xs font-semibold shrink-0">
+                    <span className="px-2.5 py-1 rounded-lg bg-amber-500/20 text-amber-300 text-xs font-semibold whitespace-nowrap shrink-0">
                       ลำดับถัดไป #{idx + 1}
                     </span>
                   </div>
