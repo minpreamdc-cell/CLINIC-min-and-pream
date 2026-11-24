@@ -44,8 +44,13 @@ export default {
     if (url.pathname === "/api/patients" && request.method === "POST") {
       const body = await request.json();
       const id = "pat-" + Date.now();
-      const countRow = await env.DB.prepare('SELECT count(*) as c FROM "Patient"').first();
-      const dn = "DN-26000" + ((countRow?.c || 4) + 1);
+      const maxRow = await env.DB.prepare('SELECT dn FROM "Patient" WHERE dn LIKE "DN-26%" ORDER BY dn DESC LIMIT 1').first();
+      let nextNum = 1;
+      if (maxRow?.dn) {
+        const parsed = parseInt(maxRow.dn.replace('DN-26', ''), 10);
+        if (!isNaN(parsed)) nextNum = parsed + 1;
+      }
+      const dn = "DN-26" + String(nextNum).padStart(4, '0');
       const now = new Date().toISOString();
       await env.DB.prepare('INSERT INTO "Patient" ("id", "dn", "title", "firstNameTh", "lastNameTh", "phone", "birthDate", "gender", "rights", "attendingDoctorId", "drugAllergies", "chronicDiseases", "depositBalance", "createdAt", "updatedAt") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)').bind(id, dn, body.title || "คุณ", body.firstNameTh, body.lastNameTh || "", body.phone || "", body.birthDate || null, body.gender || "FEMALE", body.rights || "จ่ายเอง", body.attendingDoctorId || null, body.drugAllergies || "ไม่มีประวัติแพ้ยา", body.chronicDiseases || "ไม่มี", now, now).run();
       return new Response(JSON.stringify({ success: true, id, dn }), { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } });
@@ -76,10 +81,18 @@ export default {
       const id = "vis-" + Date.now();
       const now = new Date().toISOString();
       const branch = await env.DB.prepare('SELECT id FROM "Branch" LIMIT 1').first();
-      const countRow = await env.DB.prepare('SELECT count(*) as c FROM "Visit"').first();
-      const qNo = (countRow?.c || 1) + 1;
+      // Check if already checked in
+      if (body.appointmentId) {
+        const existing = await env.DB.prepare('SELECT id, queueNumber FROM "Visit" WHERE "appointmentId" = ?').bind(body.appointmentId).first();
+        if (existing) {
+          return new Response(JSON.stringify({ success: true, id: existing.id, queueNumber: existing.queueNumber, alreadyCheckedIn: true }), { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } });
+        }
+      }
+      const vDate = body.visitDate || new Date().toISOString().split('T')[0];
+      const countRow = await env.DB.prepare('SELECT count(*) as c FROM "Visit" WHERE "visitDate" = ?').bind(vDate).first();
+      const qNo = (countRow?.c || 0) + 1;
       const vn = "VN-" + Date.now().toString().slice(-6);
-      await env.DB.prepare('INSERT INTO "Visit" ("id", "visitNumber", "patientId", "doctorId", "roomId", "branchId", "visitDate", "queueNumber", "status", "notes", "checkInTime", "createdAt", "updatedAt") VALUES (?, ?, ?, ?, ?, ?, ?, ?, "WAITING_EXAM", ?, ?, ?, ?)').bind(id, vn, body.patientId, body.doctorId, body.roomId, branch?.id || "HQ", body.visitDate, qNo, body.notes || null, now, now, now).run();
+      await env.DB.prepare('INSERT INTO "Visit" ("id", "visitNumber", "appointmentId", "patientId", "doctorId", "roomId", "branchId", "visitDate", "queueNumber", "status", "notes", "checkInTime", "createdAt", "updatedAt") VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, "WAITING_EXAM", ?, ?, ?, ?)').bind(id, vn, body.appointmentId || null, body.patientId, body.doctorId, body.roomId, branch?.id || "HQ", vDate, qNo, body.notes || null, now, now, now).run();
       return new Response(JSON.stringify({ success: true, id, queueNumber: qNo }), { headers: { ...corsHeaders, "Content-Type": "application/json; charset=utf-8" } });
     }
 

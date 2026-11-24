@@ -10,6 +10,8 @@
     "db:generate": "node node_modules/prisma/build/index.js generate",
     "db:push": "node node_modules/prisma/build/index.js db push",
     "db:seed": "node prisma/seed.js",
+    "sync:pull": "node scripts/sync-pull.js",
+    "deploy": "wrangler deploy",
     "test:critical": "node tests/critical-tests.js"
   },
   "dependencies": {

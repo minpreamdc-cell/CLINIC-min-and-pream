@@ -1,0 +1,13 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "minpream-dental-clinic",
+  "main": "cloudflare/worker.js",
+  "compatibility_date": "2024-11-01",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "min-and-pream-clinic-db",
+      "database_id": "5d485f45-c1d6-4c9d-a503-fe7611509ba8"
+    }
+  ]
+}
